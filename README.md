@@ -19,13 +19,13 @@
 
 Python 3.12+
 
-BeautifulSoup4
+Scrapy
 
-requests-cache
+XPath / CSS selectors
 
-tqdm
+Feeds 
 
-prettytable
+Pipeline
 
 ---
 
