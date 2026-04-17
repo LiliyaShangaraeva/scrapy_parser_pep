@@ -1,12 +1,16 @@
+import csv
 import datetime as dt
 from collections import defaultdict
 
-from pep_parse.constants import (BASE_DIR, DATETIME_FORMAT, STATUS, RESULTS,
+from pep_parse.constants import (DATETIME_FORMAT, STATUS, RESULTS_DIR,
                                  STATUS_SUMMARY_FILE, CSV_HEADER, TOTAL)
 
 
 class PepParsePipeline:
     """Pipeline для подсчёта количества PEP по статусам."""
+
+    def __init__(self):
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
     def open_spider(self, spider):
         """Инициализирует счётчик статусов."""
@@ -20,18 +24,17 @@ class PepParsePipeline:
 
     def close_spider(self, spider):
         """Создаёт CSV-файл со сводкой по статусам."""
-        results_dir = BASE_DIR / RESULTS
-        results_dir.mkdir(parents=True, exist_ok=True)
-
         total = sum(self.status_counter.values())
-        filename = results_dir / STATUS_SUMMARY_FILE.format(
+        filename = RESULTS_DIR / STATUS_SUMMARY_FILE.format(
             dt.datetime.now().strftime(DATETIME_FORMAT)
         )
 
-        with open(filename, mode='w', encoding='utf-8') as f:
-            f.write(CSV_HEADER)
+        rows = [
+            tuple(CSV_HEADER.split(',')),
+            *self.status_counter.items(),
+            (TOTAL, total),
+        ]
 
-            for status, count in self.status_counter.items():
-                f.write(f'{status},{count}\n')
-
-            f.write(f'{TOTAL},{total}\n')
+        with open(filename, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(rows)
